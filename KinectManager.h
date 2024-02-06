@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "VT/VirtualTexture.h"
+#include "DynamicTexture.h"
 #include "KinectManager.generated.h"
 
 
@@ -29,7 +30,10 @@ protected:
 	Windows::HANDLE DepthImageEvent;
 
 	UPROPERTY(VisibleAnywhere)
-	UVirtualTexture2D *Texture;
+	UTexture2D *Texture;
+
+	UPROPERTY(VisibleAnywhere)
+	UDynamicTexture *DynamicTexture;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent *Mesh;
@@ -38,10 +42,15 @@ protected:
 	UMaterialInstanceDynamic *MeshMaterial;
 
 	UPROPERTY(EditAnywhere)
+	UMaterialInterface *MaterialBase;
+
+	UPROPERTY(EditAnywhere)
 	int MinDist = 0;
 
 	UPROPERTY(EditAnywhere)
 	int MaxDist = 255;
+
+	float CurrentTime = 0.0;
 
 	
 

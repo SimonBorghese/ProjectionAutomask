@@ -8,6 +8,8 @@
 #define VOID void
 #include <NuiApi.h>
 
+#undef SetPortW
+
 #include <ImageUtils.h>
 
 // Sets default values for this component's properties
@@ -20,6 +22,8 @@ UKinectManager::UKinectManager()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AutoMaskMesh"));
 	MeshMaterial = CreateDefaultSubobject<UMaterialInstanceDynamic>(TEXT("Mesh Mat"));
+
+	DynamicTexture = CreateDefaultSubobject<UDynamicTexture>(TEXT("Dynamic Texture"));
 	
 
 	// ...
@@ -31,6 +35,7 @@ void UKinectManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	DynamicTexture->Create(800, 800);
 	NuiInitialize(NUI_INITIALIZE_FLAG_USES_SKELETON | NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
 	int NumSensors = -1;
 	HRESULT herr = NuiGetSensorCount(&NumSensors);
@@ -68,10 +73,9 @@ void UKinectManager::BeginPlay()
 	}
 
 	
-	UMaterialInterface* LoadedMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/MaskMat.uasset"), nullptr, LOAD_None, nullptr);
-	if (LoadedMaterial)
+	if (MaterialBase)
 	{
-		MeshMaterial = UMaterialInstanceDynamic::Create(LoadedMaterial, NULL);
+		MeshMaterial = UMaterialInstanceDynamic::Create(MaterialBase, NULL);
 
 		if (MeshMaterial)
 		{
@@ -89,7 +93,7 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	if (WAIT_OBJECT_0 == WaitForSingleObject(DepthImageEvent, 0))
+	if (Sensor && WAIT_OBJECT_0 == WaitForSingleObject(DepthImageEvent, 0))
 	{
 		HRESULT hr;
 		NUI_IMAGE_FRAME imageFrame;
@@ -159,7 +163,7 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				// Increment our index into the Kinect's depth buffer
 				++pBufferRun;
 			}
-			Texture = FImageUtils::CreateTexture2D(640, 480, ColorData, this, TEXT("Test"), EObjectFlags::RF_Dynamic, FCreateTexture2DParameters());
+			Texture = FImageUtils::CreateTexture2D(640, 480, ColorData, this, TEXT("Test"), EObjectFlags::RF_Public, FCreateTexture2DParameters());
 
 			MeshMaterial->SetTextureParameterValue(TEXT("Tex"), Texture);
 			Mesh->SetMaterial(0, MeshMaterial);
@@ -171,5 +175,12 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		Sensor->NuiImageStreamReleaseFrame(ImageStream, &imageFrame);
 
 	}
+
+	CurrentTime += DeltaTime;
+	DynamicTexture->Fill(FLinearColor(0, 0, 0, 0));
+	DynamicTexture->DrawRect(abs(599 * sin(CurrentTime)), abs(399 * cos(CurrentTime)), 200, 200, FLinearColor::Red);
+	DynamicTexture->UpdateTexture();
+	MeshMaterial->SetTextureParameterValue(TEXT("Tex"), DynamicTexture->GetTexture());
+	Mesh->SetMaterial(0, MeshMaterial);
 }
 
