@@ -41,7 +41,16 @@ public:
 	void DrawRect(int32 x0, int32 y0, int32 w, int32 h, FLinearColor Color);
 
 	UFUNCTION(BlueprintCallable)
+	void DrawImage(TArray<FColor> Pixels);
+
+	UFUNCTION(BlueprintCallable)
+	void DrawImageSmooth(TArray<FColor> Pixels);
+
+	UFUNCTION(BlueprintCallable)
 	void DrawPixel(int32 x, int32 y, FLinearColor Color);
+
+	UFUNCTION(BlueprintCallable)
+	FColor GetPixel(int32 x, int32 y);
 
 	UFUNCTION(BlueprintCallable)
 	void Fill(FLinearColor Color);

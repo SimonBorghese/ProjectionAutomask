@@ -35,8 +35,8 @@ void UKinectManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DynamicTexture->Create(800, 800);
-	NuiInitialize(NUI_INITIALIZE_FLAG_USES_SKELETON | NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
+	DynamicTexture->Create(640, 480);
+	NuiInitialize( NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
 	int NumSensors = -1;
 	HRESULT herr = NuiGetSensorCount(&NumSensors);
 	
@@ -56,7 +56,7 @@ void UKinectManager::BeginPlay()
 			} else
 			{
 				UE_LOG(LogActor, Warning, TEXT("Successfully created sensor!"))
-				Sensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR | NUI_INITIALIZE_FLAG_USES_SKELETON);
+				Sensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR );
 
 				DepthImageEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 				herr = Sensor->NuiImageStreamOpen(NUI_IMAGE_TYPE_DEPTH,
@@ -92,6 +92,7 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	
 	// ...
 	if (Sensor && WAIT_OBJECT_0 == WaitForSingleObject(DepthImageEvent, 0))
 	{
@@ -147,11 +148,11 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 				// Note: Using conditionals in this loop could degrade performance.
 				// Consider using a lookup table instead when writing production code.
-				BYTE intensity = static_cast<BYTE>(depth >= minDepth && depth <= maxDepth ? depth % 256 : 0);
+				//BYTE intensity = static_cast<BYTE>(depth >= minDepth && depth <= maxDepth ? depth % 256 : 0);
 
-				if (intensity < MaxDist && intensity > MinDist)
+				if (depth < MaxDist && depth > MinDist)
 				{
-					ColorData.Add(FColor(intensity, intensity, intensity));
+					ColorData.Add(FColor(depth, depth, depth));
 				} else
 				{
 					ColorData.Add(FColor(0, 0,0, 0));
@@ -163,10 +164,12 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				// Increment our index into the Kinect's depth buffer
 				++pBufferRun;
 			}
-			Texture = FImageUtils::CreateTexture2D(640, 480, ColorData, this, TEXT("Test"), EObjectFlags::RF_Public, FCreateTexture2DParameters());
+			DynamicTexture->Fill(FLinearColor(0, 0, 0, 0));
+			DynamicTexture->DrawImageSmooth(ColorData);
+			//Texture = FImageUtils::CreateTexture2D(640, 480, ColorData, this, TEXT("Test"), EObjectFlags::RF_Public, FCreateTexture2DParameters());
 
-			MeshMaterial->SetTextureParameterValue(TEXT("Tex"), Texture);
-			Mesh->SetMaterial(0, MeshMaterial);
+			//MeshMaterial->SetTextureParameterValue(TEXT("Tex"), Texture);
+			//Mesh->SetMaterial(0, MeshMaterial);
 			
 
 		}
@@ -177,8 +180,7 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 
 	CurrentTime += DeltaTime;
-	DynamicTexture->Fill(FLinearColor(0, 0, 0, 0));
-	DynamicTexture->DrawRect(abs(599 * sin(CurrentTime)), abs(399 * cos(CurrentTime)), 200, 200, FLinearColor::Red);
+	//DynamicTexture->DrawRect(abs(439 * sin(CurrentTime)), abs(279 * cos(CurrentTime)), 200, 200, FLinearColor::Red);
 	DynamicTexture->UpdateTexture();
 	MeshMaterial->SetTextureParameterValue(TEXT("Tex"), DynamicTexture->GetTexture());
 	Mesh->SetMaterial(0, MeshMaterial);

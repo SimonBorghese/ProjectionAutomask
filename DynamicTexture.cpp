@@ -61,6 +61,40 @@ void UDynamicTexture::DrawRect(int32 x0, int32 y0, int32 w, int32 h, FLinearColo
 	}
 }
 
+void UDynamicTexture::DrawImage(TArray<FColor> Pixels)
+{
+	for (int y = 0; y < TexHeight; y++)
+	{
+		for (int x = 0; x < TexWidth; x++)
+		{
+			DrawPixel(x, y, Pixels[(y*TexWidth) + x]);
+		}
+	}
+}
+
+void UDynamicTexture::DrawImageSmooth(TArray<FColor> Pixels)
+{
+	for (int y = 0; y < TexHeight; y++)
+	{
+		for (int x = 0; x < TexWidth; x++)
+		{
+			FLinearColor TrueColor = Pixels[(y*TexWidth) + x];
+			FLinearColor Original = GetPixel(x,y);
+
+			TrueColor.R += Original.R;
+			TrueColor.G += Original.G;
+			TrueColor.B += Original.B;
+			TrueColor.A += Original.A;
+
+			TrueColor.R /= 2.0;
+			TrueColor.G /= 2.0;
+			TrueColor.B /= 2.0;
+			TrueColor.A /= 2.0;
+			DrawPixel(x, y, TrueColor);
+		}
+	}
+}
+
 void UDynamicTexture::DrawPixel(int32 x, int32 y, FLinearColor Color)
 {
 	uint8 *Pixel = &TextureCache[(y*TexWidth * 4) + (x* 4)];
@@ -68,6 +102,13 @@ void UDynamicTexture::DrawPixel(int32 x, int32 y, FLinearColor Color)
 	Pixel[1] = Color.G * 255;
 	Pixel[2] = Color.B * 255;
 	Pixel[3] = Color.A * 255;
+}
+
+FColor UDynamicTexture::GetPixel(int32 x, int32 y)
+{
+	uint8 *Pixel = &TextureCache[(y*TexWidth * 4) + (x* 4)];
+
+	return FColor(Pixel[0], Pixel[1], Pixel[2], Pixel[3]);
 }
 
 void UDynamicTexture::Fill(FLinearColor Color)
