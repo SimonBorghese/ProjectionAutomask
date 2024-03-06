@@ -1,13 +1,15 @@
 // (c) Simon Borghese 2023 All Rights Reserved. See License.txt for details.
 
 #pragma once
-
+#undef SetPort
+#undef SetPortW
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "VT/VirtualTexture.h"
 #include "DynamicTexture.h"
 #include "KinectManager.generated.h"
-
+#undef SetPort
+#undef SetPortW
 
 
 
@@ -43,6 +45,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface *MaterialBase;
+	
 
 	UPROPERTY(EditAnywhere)
 	int MinDist = 0;

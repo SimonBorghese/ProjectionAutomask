@@ -1,16 +1,22 @@
 // (c) Simon Borghese 2023 All Rights Reserved. See License.txt for details.
 
 
+#undef SetPort
+#undef SetPortW
 #include "KinectManager.h"
 
 #include <dmerror.h>
 #define SEVERITY_ERROR 1
 #define VOID void
 #include <NuiApi.h>
+#undef SetPort
+#undef SetPortW
 
 #undef SetPortW
 
 #include <ImageUtils.h>
+
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UKinectManager::UKinectManager()
@@ -136,6 +142,7 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 			TArray<FColor> ColorData;
 
+			int point = 0;
 			while ( pBufferRun < pBufferEnd )
 			{
 				// discard the portion of the depth that contains only the player index
@@ -152,11 +159,13 @@ void UKinectManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 				if (depth < MaxDist && depth > MinDist)
 				{
+					DrawDebugPoint(GetWorld(), FVector((point % 640), (point / 640), depth), 1.0, FColor::Blue);
 					ColorData.Add(FColor(depth, depth, depth));
 				} else
 				{
 					ColorData.Add(FColor(0, 0,0, 0));
 				}
+				point++;
 
 				// We're outputting BGR, the last byte in the 32 bits is unused so skip it
 				// If we were outputting BGRA, we would write alpha here.
