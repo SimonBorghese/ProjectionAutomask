@@ -3,9 +3,6 @@
 
 #include "DepthCamera.h"
 
-#undef check
-#include "opencv2/opencv.hpp"
-#define check(expr)				UE_CHECK_IMPL(expr)
 // Sets default values for this component's properties
 UDepthCamera::UDepthCamera()
 {
@@ -24,7 +21,8 @@ void UDepthCamera::BeginPlay()
 	Texture->Create(1200, 800);
 
 	// ...
-	
+
+	/*
 	cv::Mat frame;
 	cv::VideoCapture cap;
 	int deviceID = 0;             // 0 = open default camera
@@ -52,6 +50,7 @@ void UDepthCamera::BeginPlay()
 			Texture->UpdateTexture();
 		}
 	}
+	*/
 		
 }
 
